@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Lenguajes Formales - Computador Vintage</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono:wght@400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #00ff00;
+            animation: backgroundShift 10s infinite alternate;
+        }
+
+        @keyframes backgroundShift {
+            0% { background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460); }
+            100% { background: linear-gradient(45deg, #0f3460, #1a1a2e, #16213e); }
+        }
+
+        .computer-container {
+            background: linear-gradient(145deg, #2c2c54, #1a1a2e);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 0, 0.15),
+                inset 0 0 20px rgba(0, 0, 0, 0.3),
+                0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 3px solid #333;
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            animation: computerGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes computerGlow {
+            0% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.3), 0 20px 40px rgba(0, 0, 0, 0.5); }
+            100% { box-shadow: 0 0 70px rgba(0, 255, 0, 0.25), inset 0 0 20px rgba(0, 0, 0, 0.3), 0 20px 40px rgba(0, 0, 0, 0.5); }
+        }
+
+        .computer-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(145deg, #333, #555);
+            border-radius: 10px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .computer-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(90deg, #0f3460, #16213e);
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .computer-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scanLine 4s infinite;
+        }
+
+        @keyframes scanLine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .computer-header h1 {
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen {
+            background: #000;
+            border-radius: 15px;
+            padding: 20px;
+            border: 5px solid #333;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 255, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section {
+            background: rgba(0, 20, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #004400;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #006600;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.2);
+        }
+
+        .section h2 {
+            color: #00ff00;
+            font-size: 1.3rem;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #004400;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 40, 0, 0.8);
+            border: 2px solid #004400;
+            border-radius: 5px;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            background: rgba(0, 60, 0, 0.9);
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #004400, #006600);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(145deg, #006600, #008800);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .output-box {
+            background: rgba(0, 40, 0, 0.5);
+            border: 1px solid #004400;
+            border-radius: 5px;
+            padding: 12px;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-box::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .output-box::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        .output-line {
+            color: #00ff00;
+            margin-bottom: 5px;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .alphabet-display, .language-display {
+            background: rgba(0, 60, 0, 0.3);
+            border: 1px solid #006600;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .alphabet-display:hover, .language-display:hover {
+            background: rgba(0, 80, 0, 0.4);
+            border-color: #008800;
+        }
+
+        .language-display {
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .error {
+            color: #ff4444;
+            text-shadow: 0 0 3px rgba(255, 68, 68, 0.5);
+            animation: errorPulse 0.5s ease-in-out;
+        }
+
+        @keyframes errorPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .success {
+            color: #44ff44;
+            text-shadow: 0 0 3px rgba(68, 255, 68, 0.5);
+            animation: successGlow 0.5s ease-in-out;
+        }
+
+        @keyframes successGlow {
+            0%, 100% { text-shadow: 0 0 3px rgba(68, 255, 68, 0.5); }
+            50% { text-shadow: 0 0 10px rgba(68, 255, 68, 0.8); }
+        }
+
+        .warning {
+            color: #ffff44;
+            text-shadow: 0 0 3px rgba(255, 255, 68, 0.5);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .input-row .form-control {
+            flex: 1;
+        }
+
+        .symbol-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .symbol-item {
+            background: rgba(0, 100, 0, 0.5);
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .symbol-item::before {
+            content: '×';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            color: #ff4444;
+            font-weight: bold;
+            transition: opacity 0.2s ease;
+        }
+
+        .symbol-item:hover {
+            background: rgba(255, 68, 68, 0.3);
+            border-color: #ff4444;
+            transform: scale(1.05);
+        }
+
+        .symbol-item:hover::before {
+            opacity: 1;
+        }
+
+        .symbol-item:hover span {
+            opacity: 0;
+        }
+
+        .symbol-item span {
+            transition: opacity 0.2s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: rgba(0, 60, 0, 0.3);
+            border: 1px solid #006600;
+            border-radius: 5px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .computer-container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+            
+            .input-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .computer-header h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Efectos adicionales */
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid #00ff00;
+            white-space: nowrap;
+            animation: typing 2s steps(40, end), blink-caret 1s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00ff00; }
+        }
+
+        .loading {
+            position: relative;
+            color: #00ff00;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #00ff00;
+            box-shadow: 
+                6px 0 #00ff00,
+                12px 0 #00ff00;
+            animation: loading 1s infinite;
+        }
+
+        @keyframes loading {
+            0% { opacity: 1; }
+            33% { opacity: 0.5; }
+            66% { opacity: 0.25; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="computer-container">
+        <div class="computer-header">
+            <h1> SIMULADOR DE LENGUAJES</h1>
+        </div>
+        
+        <div class="screen">
+            <div class="container">
+                <!-- Sección del Alfabeto y Generación de Cadenas -->
+                <div class="section">
+                    <h2> 1. DEFINICIÓN DEL ALFABETO (Σ)</h2>
+                    
+                    <div class="form-group">
+                        <label>Alfabeto actual:</label>
+                        <div class="alphabet-display" id="pantallaAlfabeto">Σ = { }</div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <input type="text" id="entradaSimbolo" class="form-control" placeholder="Ingrese un símbolo (ej: a, b, 0, 1)" maxlength="5">
+                        <button class="btn" onclick="agregarSimbolo()">AGREGAR</button>
+                        <button class="btn" onclick="limpiarAlfabeto()">LIMPIAR</button>
+                    </div>
+                    
+                    <div class="symbol-list" id="listaSimbolos"></div>
+                    
+                    <hr style="border-color: #004400; margin: 20px 0;">
+                    
+                    <h2> 2. GENERACIÓN DE CADENAS</h2>
+                    
+                    <div class="form-group">
+                        <label for="cantidadCadenas">Número de cadenas a generar (1-50):</label>
+                        <input type="number" id="cantidadCadenas" class="form-control" min="1" max="50" value="5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitudMaxima">Longitud máxima de cadenas (1-20):</label>
+                        <input type="number" id="longitudMaxima" class="form-control" min="1" max="20" value="8">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="incluirVacia" style="margin-right: 5px;">
+                            Incluir cadena vacía (ε)
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="generarCadenas()">⚡ GENERAR CADENAS</button>
+                    
+                    <div class="output-box" id="salidaCadenas"></div>
+                </div>
+
+                <!-- Sección del Lenguaje y Verificación -->
+                <div class="section">
+                    <h2>3. DEFINICIÓN DEL LENGUAJE (L)</h2>
+                    
+                    <div class="form-group">
+                        <label>Lenguaje actual:</label>
+                        <div class="language-display" id="pantallaLenguaje">L = { }</div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <input type="text" id="entradaCadena" class="form-control" placeholder="Ingrese una cadena (ε para cadena vacía)">
+                        <button class="btn" onclick="agregarCadenaAlLenguaje()">AGREGAR</button>
+                        <button class="btn" onclick="limpiarLenguaje()">LIMPIAR</button>
+                    </div>
+                    
+                    <div style="margin: 10px 0;">
+                        <button class="btn" onclick="usarCadenasGeneradas()">USAR CADENAS GENERADAS</button>
+                        <button class="btn" onclick="cargarLenguajePredefinido()">CARGAR EJEMPLO</button>
+                    </div>
+                    
+                    <hr style="border-color: #004400; margin: 20px 0;">
+                    
+                    <h2> 4. VERIFICACIÓN DE PERTENENCIA</h2>
+                    
+                    <div class="input-row">
+                        <input type="text" id="entradaVerificar" class="form-control" placeholder="Cadena a verificar (ε para vacía)">
+                        <button class="btn" onclick="verificarPertenencia()">VERIFICAR</button>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <button class="btn" onclick="verificarCadenasAleatorias()"> PRUEBAS ALEATORIAS</button>
+                        <button class="btn" onclick="mostrarEstadisticas()"> ESTADÍSTICAS</button>
+                        <button class="btn" onclick="exportarDatos()"> EXPORTAR</button>
+                    </div>
+                    
+                    <div class="output-box" id="salidaVerificacion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let alfabeto = new Set();
+        let lenguaje = new Set();
+        let cadenasGeneradas = [];
+
+        // Función para manejar cadenas vacías
+        function normalizarCadena(cadena) {
+            return cadena === 'ε' || cadena === '' ? '' : cadena;
+        }
+
+        function mostrarCadena(cadena) {
+            return cadena === '' ? 'ε' : cadena;
+        }
+
+        // Funciones del Alfabeto
+        function agregarSimbolo() {
+            const entradaSimbolo = document.getElementById('entradaSimbolo');
+            const simbolo = entradaSimbolo.value.trim();
+            
+            if (!simbolo) {
+                mostrarMensaje('salidaVerificacion', ' Error: Ingrese un símbolo válido', 'error');
+                return;
+            }
+            
+            if (simbolo === 'ε') {
+                mostrarMensaje('salidaVerificacion', ' Error: ε es reservado para la cadena vacía', 'error');
+                return;
+            }
+            
+            if (alfabeto.has(simbolo)) {
+                mostrarMensaje('salidaVerificacion', ` Advertencia: El símbolo '${simbolo}' ya existe en el alfabeto`, 'warning');
+                return;
+            }
+            
+            alfabeto.add(simbolo);
+            entradaSimbolo.value = '';
+            actualizarPantallaAlfabeto();
+            mostrarMensaje('salidaVerificacion', `Símbolo '${simbolo}' agregado al alfabeto`, 'success');
+        }
+
+        function limpiarAlfabeto() {
+            alfabeto.clear();
+            actualizarPantallaAlfabeto();
+            mostrarMensaje('salidaVerificacion', ' Alfabeto limpiado', 'success');
+        }
+
+        function actualizarPantallaAlfabeto() {
+            const arregloAlfabeto = Array.from(alfabeto).sort();
+            const pantalla = document.getElementById('pantallaAlfabeto');
+            const listaSimbolos = document.getElementById('listaSimbolos');
+            
+            if (arregloAlfabeto.length === 0) {
+                pantalla.textContent = 'Σ = { }';
+                listaSimbolos.innerHTML = '';
+            } else {
+                pantalla.textContent = `Σ = { ${arregloAlfabeto.join(', ')} }`;
+                
+                listaSimbolos.innerHTML = '';
+                arregloAlfabeto.forEach(simbolo => {
+                    const elemento = document.createElement('div');
+                    elemento.className = 'symbol-item';
+                    elemento.innerHTML = `<span>${simbolo}</span>`;
+                    elemento.onclick = () => eliminarSimbolo(simbolo);
+                    elemento.title = 'Clic para eliminar';
+                    listaSimbolos.appendChild(elemento);
+                });
+            }
+        }
+
+        function eliminarSimbolo(simbolo) {
+            alfabeto.delete(simbolo);
+            actualizarPantallaAlfabeto();
+            mostrarMensaje('salidaVerificacion', ` Símbolo '${simbolo}' eliminado del alfabeto`, 'success');
+        }
+
+        // Funciones de Generación de Cadenas
+        function generarCadenas() {
+            if (alfabeto.size === 0) {
+                mostrarMensaje('salidaCadenas', ' Error: Debe definir al menos un símbolo en el alfabeto', 'error');
+                return;
+            }
+            
+            const cantidad = Math.min(Math.max(parseInt(document.getElementById('cantidadCadenas').value) || 5, 1), 50);
+            const longitudMaxima = Math.min(Math.max(parseInt(document.getElementById('longitudMaxima').value) || 8, 1), 20);
+            const incluirVacia = document.getElementById('incluirVacia').checked;
+            
+            cadenasGeneradas = [];
+            const arregloAlfabeto = Array.from(alfabeto);
+            const divSalida = document.getElementById('salidaCadenas');
+            divSalida.innerHTML = '';
+            
+            mostrarMensaje('salidaCadenas', ` GENERANDO ${cantidad} CADENAS...`, 'loading');
+            mostrarMensaje('salidaCadenas', ` Alfabeto: Σ = { ${arregloAlfabeto.join(', ')} }`, '');
+            mostrarMensaje('salidaCadenas', ` Longitud máxima: ${longitudMaxima}`, '');
+            
+            setTimeout(() => {
+                mostrarMensaje('salidaCadenas', '');
+                
+                // Incluir cadena vacía si está seleccionada
+                if (incluirVacia) {
+                    cadenasGeneradas.push('');
+                    mostrarMensaje('salidaCadenas', `1. ${mostrarCadena('')} (Longitud: 0)`, '');
+                }
+                
+                for (let i = incluirVacia ? 1 : 0; i < cantidad; i++) {
+                    const longitud = Math.floor(Math.random() * longitudMaxima) + 1;
+                    let cadena = '';
+                    
+                    for (let j = 0; j < longitud; j++) {
+                        const simboloAleatorio = arregloAlfabeto[Math.floor(Math.random() * arregloAlfabeto.length)];
+                        cadena += simboloAleatorio;
+                    }
+                    
+                    cadenasGeneradas.push(cadena);
+                    mostrarMensaje('salidaCadenas', `${i + 1}. ${mostrarCadena(cadena)} (Longitud: ${cadena.length})`, '');
+                }
+                
+                mostrarMensaje('salidaCadenas', '');
+                mostrarMensaje('salidaCadenas', ` Total de cadenas generadas: ${cadenasGeneradas.length}`, 'success');
+            }, 500);
+        }
+
+        // Funciones del Lenguaje
+        function agregarCadenaAlLenguaje() {
+            const entradaCadena = document.getElementById('entradaCadena');
+            let cadena = entradaCadena.value.trim();
+            
+            // Normalizar cadena vacía
+            cadena = normalizarCadena(cadena);
+            
+            // Verificar que todos los símbolos pertenezcan al alfabeto (excepto para cadena vacía)
+            if (alfabeto.size > 0 && cadena !== '') {
+                for (let caracter of cadena) {
+                    if (!alfabeto.has(caracter)) {
+                        mostrarMensaje('salidaVerificacion', ` Error: El símbolo '${caracter}' no pertenece al alfabeto Σ`, 'error');
+                        return;
+                    }
+                }
+            }
+            
+            if (lenguaje.has(cadena)) {
+                mostrarMensaje('salidaVerificacion', ` Advertencia: La cadena '${mostrarCadena(cadena)}' ya existe en el lenguaje`, 'warning');
+                return;
+            }
+            
+            lenguaje.add(cadena);
+            entradaCadena.value = '';
+            actualizarPantallaLenguaje();
+            mostrarMensaje('salidaVerificacion', ` Cadena '${mostrarCadena(cadena)}' agregada al lenguaje`, 'success');
+        }
+
+        function usarCadenasGeneradas() {
+            if (cadenasGeneradas.length === 0) {
+                mostrarMensaje('salidaVerificacion', ' Error: Primero debe generar cadenas', 'error');
+                return;
+            }
+            
+            let agregadas = 0;
+            cadenasGeneradas.forEach(cadena => {
+                if (!lenguaje.has(cadena)) {
+                    lenguaje.add(cadena);
+                    agregadas++;
+                }
+            });
+            
+            actualizarPantallaLenguaje();
+            mostrarMensaje('salidaVerificacion', ` ${agregadas} cadenas agregadas al lenguaje`, 'success');
+        }
+
+        function cargarLenguajePredefinido() {
+            // Limpiar alfabeto y lenguaje actual
+            alfabeto.clear();
+            lenguaje.clear();
+            
+            // Cargar ejemplo: L = {a^n b^n | n ≥ 0}
+            alfabeto.add('a');
+            alfabeto.add('b');
+            
+            lenguaje.add(''); // cadena vacía
+            lenguaje.add('ab');
+            lenguaje.add('aabb');
+            lenguaje.add('aaabbb');
+            lenguaje.add('aaaabbbb');
+            
+            actualizarPantallaAlfabeto();
+            actualizarPantallaLenguaje();
+            
+            mostrarMensaje('salidaVerificacion', 'Ejemplo cargado: L = {aⁿbⁿ | n ≥ 0}', 'success');
+            mostrarMensaje('salidaVerificacion', ' Lenguaje de cadenas balanceadas a-b', '');
+        }
+
+        function limpiarLenguaje() {
+            lenguaje.clear();
+            actualizarPantallaLenguaje();
+            mostrarMensaje('salidaVerificacion', '🧹 Lenguaje limpiado', 'success');
+        }
+
+        function actualizarPantallaLenguaje() {
+            const arregloLenguaje = Array.from(lenguaje).sort((a, b) => a.length - b.length || a.localeCompare(b));
+            const pantalla = document.getElementById('pantallaLenguaje');
+            
+            if (arregloLenguaje.length === 0) {
+                pantalla.textContent = 'L = { }';
+            } else {
+                const cadenasParaMostrar = arregloLenguaje.map(c => `"${mostrarCadena(c)}"`);
+                if (cadenasParaMostrar.length > 10) {
+                    pantalla.textContent = `L = { ${cadenasParaMostrar.slice(0, 10).join(', ')}, ... } (${arregloLenguaje.length} cadenas)`;
+                } else {
+                    pantalla.textContent = `L = { ${cadenasParaMostrar.join(', ')} }`;
+                }
+            }
+        }
+
+        // Funciones de Verificación
+        function verificarPertenencia() {
+            const entradaVerificar = document.getElementById('entradaVerificar');
+            let cadena = entradaVerificar.value.trim();
+            
+            if (entradaVerificar.value.trim() === '') {
+                mostrarMensaje('salidaVerificacion', ' Error: Ingrese una cadena para verificar', 'error');
+                return;
+            }
+            
+            // Normalizar cadena vacía
+            cadena = normalizarCadena(cadena);
+            
+            const pertenece = lenguaje.has(cadena);
+            const resultado = pertenece ? 'Verdadero ' : 'Falso ';
+            const nombreClase = pertenece ? 'success' : 'error';
+            
+            mostrarMensaje('salidaVerificacion', ` ¿'${mostrarCadena(cadena)}' ∈ L? → ${resultado}`, nombreClase);
+            entradaVerificar.value = '';
+        }
+
+        function verificarCadenasAleatorias() {
+            if (alfabeto.size === 0) {
+                mostrarMensaje('salidaVerificacion', ' Error: Debe definir al menos un símbolo en el alfabeto', 'error');
+                return;
+            }
+            
+            if (lenguaje.size === 0) {
+                mostrarMensaje('salidaVerificacion', ' Error: Debe definir al menos una cadena en el lenguaje', 'error');
+                return;
+            }
+            
+            const divSalida = document.getElementById('salidaVerificacion');
+            divSalida.innerHTML = '';
+            
+            mostrarMensaje('salidaVerificacion', 'VERIFICACIÓN DE CADENAS ALEATORIAS', 'success');
+            mostrarMensaje('salidaVerificacion', '');
+            
+            const arregloAlfabeto = Array.from(alfabeto);
+            const cadenasParaProbar = [];
+            
+            // Generar algunas cadenas aleatorias
+            for (let i = 0; i < 8; i++) {
+                const longitud = Math.floor(Math.random() * 6) + 1;
+                let cadena = '';
+                
+                for (let j = 0; j < longitud; j++) {
+                    const simboloAleatorio = arregloAlfabeto[Math.floor(Math.random() * arregloAlfabeto.length)];
+                    cadena += simboloAleatorio;
+                }
+                
+                cadenasParaProbar.push(cadena);
+            }
+            
+            // Agregar algunas cadenas del lenguaje para mostrar casos positivos
+            const arregloLenguaje = Array.from(lenguaje);
+            cadenasParaProbar.push(...arregloLenguaje.slice(0, 3));
+            
+            // Mezclar el arreglo
+            for (let i = cadenasParaProbar.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cadenasParaProbar[i], cadenasParaProbar[j]] = [cadenasParaProbar[j], cadenasParaProbar[i]];
+            }
+            
+            let contadorCorrectas = 0;
+            let contadorTotal = 0;
+            
+            cadenasParaProbar.forEach((cadena, indice) => {
+                const pertenece = lenguaje.has(cadena);
+                const resultado = pertenece ? 'Verdadero ' : 'Falso ';
+                const nombreClase = pertenece ? 'success' : 'error';
+                
+                mostrarMensaje('salidaVerificacion', `${indice + 1}. ¿'${mostrarCadena(cadena)}' ∈ L? → ${resultado}`, nombreClase);
+                
+                if (pertenece) contadorCorrectas++;
+                contadorTotal++;
+            });
+            
+            mostrarMensaje('salidaVerificacion', '');
+            mostrarMensaje('salidaVerificacion', ` Resultados: ${contadorCorrectas}/${contadorTotal} cadenas pertenecen al lenguaje`, 'success');
+        }
+
+        function mostrarEstadisticas() {
+            const divSalida = document.getElementById('salidaVerificacion');
+            divSalida.innerHTML = '';
+            
+            mostrarMensaje('salidaVerificacion', ' ESTADÍSTICAS DEL SISTEMA', 'success');
+            mostrarMensaje('salidaVerificacion', '');
+            
+            // Estadísticas del alfabeto
+            mostrarMensaje('salidaVerificacion', 'ALFABETO:', '');
+            mostrarMensaje('salidaVerificacion', `• Tamaño del alfabeto: |Σ| = ${alfabeto.size}`, '');
+            if (alfabeto.size > 0) {
+                mostrarMensaje('salidaVerificacion', `• Símbolos: { ${Array.from(alfabeto).sort().join(', ')} }`, '');
+            }
+            mostrarMensaje('salidaVerificacion', '');
+            
+            // Estadísticas del lenguaje
+            mostrarMensaje('salidaVerificacion', ' LENGUAJE:', '');
+            mostrarMensaje('salidaVerificacion', `• Tamaño del lenguaje: |L| = ${lenguaje.size}`, '');
+            mostrarMensaje('salidaVerificacion', `• Cadenas generadas: ${cadenasGeneradas.length}`, '');
+            
+            if (lenguaje.size > 0) {
+                const arregloLenguaje = Array.from(lenguaje);
+                const longitudes = arregloLenguaje.map(c => c.length);
+                const longitudMinima = Math.min(...longitudes);
+                const longitudMaxima = Math.max(...longitudes);
+                const longitudPromedio = (longitudes.reduce((a, b) => a + b, 0) / longitudes.length).toFixed(2);
+                
+                mostrarMensaje('salidaVerificacion', '');
+                mostrarMensaje('salidaVerificacion', ' ANÁLISIS DE LONGITUDES:', '');
+                mostrarMensaje('salidaVerificacion', `• Longitud mínima: ${longitudMinima}`, '');
+                mostrarMensaje('salidaVerificacion', `• Longitud máxima: ${longitudMaxima}`, '');
+                mostrarMensaje('salidaVerificacion', `• Longitud promedio: ${longitudPromedio}`, '');
+                
+                // Distribución por longitudes
+                const distribucionLongitudes = {};
+                longitudes.forEach(long => {
+                    distribucionLongitudes[long] = (distribucionLongitudes[long] || 0) + 1;
+                });
+                
+                mostrarMensaje('salidaVerificacion', '');
+                mostrarMensaje('salidaVerificacion', ' DISTRIBUCIÓN POR LONGITUD:', '');
+                Object.entries(distribucionLongitudes).sort((a, b) => a[0] - b[0]).forEach(([long, cantidad]) => {
+                    const porcentaje = ((cantidad / lenguaje.size) * 100).toFixed(1);
+                    mostrarMensaje('salidaVerificacion', `• Longitud ${long}: ${cantidad} cadenas (${porcentaje}%)`, '');
+                });
+                
+                // Análisis de símbolos más frecuentes
+                if (alfabeto.size > 0) {
+                    const frecuenciaSimbolo = {};
+                    Array.from(alfabeto).forEach(simbolo => frecuenciaSimbolo[simbolo] = 0);
+                    
+                    arregloLenguaje.forEach(cadena => {
+                        for (let caracter of cadena) {
+                            if (frecuenciaSimbolo[caracter] !== undefined) {
+                                frecuenciaSimbolo[caracter]++;
+                            }
+                        }
+                    });
+                    
+                    const totalSimbolos = Object.values(frecuenciaSimbolo).reduce((a, b) => a + b, 0);
+                    if (totalSimbolos > 0) {
+                        mostrarMensaje('salidaVerificacion', '');
+                        mostrarMensaje('salidaVerificacion', ' FRECUENCIA DE SÍMBOLOS:', '');
+                        Object.entries(frecuenciaSimbolo).sort((a, b) => b[1] - a[1]).forEach(([simbolo, frec]) => {
+                            const porcentaje = ((frec / totalSimbolos) * 100).toFixed(1);
+                            mostrarMensaje('salidaVerificacion', `• '${simbolo}': ${frec} veces (${porcentaje}%)`, '');
+                        });
+                    }
+                }
+            }
+            
+            mostrarMensaje('salidaVerificacion', '');
+            mostrarMensaje('salidaVerificacion', ` Hora del análisis: ${new Date().toLocaleTimeString()}`, '');
+        }
+
+        function exportarDatos() {
+            if (alfabeto.size === 0 && lenguaje.size === 0) {
+                mostrarMensaje('salidaVerificacion', ' Error: No hay datos para exportar', 'error');
+                return;
+            }
+            
+            const datos = {
+                timestamp: new Date().toISOString(),
+                alfabeto: Array.from(alfabeto).sort(),
+                lenguaje: Array.from(lenguaje).sort(),
+                cadenasGeneradas: cadenasGeneradas,
+                estadisticas: {
+                    tamanoAlfabeto: alfabeto.size,
+                    tamanoLenguaje: lenguaje.size,
+                    cantidadGeneradas: cadenasGeneradas.length
+                }
+            };
+            
+            const cadenaJSON = JSON.stringify(datos, null, 2);
+            const blob = new Blob([cadenaJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lenguaje_formal_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            mostrarMensaje('salidaVerificacion', ' Datos exportados exitosamente', 'success');
+        }
+
+        // Función auxiliar para mostrar mensajes con animación
+        function mostrarMensaje(idElemento, mensaje, nombreClase = '') {
+            const divSalida = document.getElementById(idElemento);
+            const lineaMensaje = document.createElement('div');
+            lineaMensaje.className = `output-line ${nombreClase}`;
+            lineaMensaje.textContent = mensaje;
+            divSalida.appendChild(lineaMensaje);
+            divSalida.scrollTop = divSalida.scrollHeight;
+            
+            // Remover clase loading después de un tiempo
+            if (nombreClase === 'loading') {
+                setTimeout(() => {
+                    lineaMensaje.classList.remove('loading');
+                }, 2000);
+            }
+        }
+
+        // Event listeners para Enter
+        document.getElementById('entradaSimbolo').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                agregarSimbolo();
+            }
+        });
+
+        document.getElementById('entradaCadena').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                agregarCadenaAlLenguaje();
+            }
+        });
+
+        document.getElementById('entradaVerificar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verificarPertenencia();
+            }
+        });
+
+        // Validación de inputs numéricos
+        document.getElementById('cantidadCadenas').addEventListener('input', function(e) {
+            let valor = parseInt(e.target.value);
+            if (valor < 1) e.target.value = 1;
+            if (valor > 50) e.target.value = 50;
+        });
+
+        document.getElementById('longitudMaxima').addEventListener('input', function(e) {
+            let valor = parseInt(e.target.value);
+            if (valor < 1) e.target.value = 1;
+            if (valor > 20) e.target.value = 20;
+        });
+
+        // Función de inicialización con mensaje de bienvenida
+        function mostrarMensajeBienvenida() {
+            mostrarMensaje('salidaVerificacion', ' SISTEMA INICIADO', 'success');
+            mostrarMensaje('salidaVerificacion', '');
+            mostrarMensaje('salidaVerificacion', ' INSTRUCCIONES RÁPIDAS:', '');
+            mostrarMensaje('salidaVerificacion', '1. Defina el alfabeto Σ agregando símbolos', '');
+            mostrarMensaje('salidaVerificacion', '2. Genere cadenas aleatorias o defina un lenguaje L', '');
+            mostrarMensaje('salidaVerificacion', '3. Verifique pertenencia de cadenas al lenguaje', '');
+            mostrarMensaje('salidaVerificacion', '4. Analice estadísticas y exporte datos', '');
+            mostrarMensaje('salidaVerificacion', '');
+            mostrarMensaje('salidaVerificacion', ' Use "ε" para representar la cadena vacía', '');
+            mostrarMensaje('salidaVerificacion', ' ¡Comience definiendo su alfabeto!', '');
+        }
+
+        // Función para cargar ejemplo automáticamente
+        function cargarEjemploInicial() {
+            // Cargar ejemplo simple
+            alfabeto.add('0');
+            alfabeto.add('1');
+            actualizarPantallaAlfabeto();
+            
+            lenguaje.add('');
+            lenguaje.add('0');
+            lenguaje.add('1');
+            lenguaje.add('01');
+            lenguaje.add('10');
+            lenguaje.add('101');
+            actualizarPantallaLenguaje();
+        }
+
+        // Inicialización del sistema
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                mostrarMensajeBienvenida();
+                cargarEjemploInicial();
+                
+                mostrarMensaje('salidaCadenas', ' Sistema listo para generar cadenas', 'success');
+                mostrarMensaje('salidaCadenas', ' Ejemplo cargado: alfabeto binario {0, 1}', '');
+            }, 1000);
+        });
+
+        // Función para manejar errores globalmente
+        window.onerror = function(mensaje, url, lineaNumero, columnaNumero, error) {
+            mostrarMensaje('salidaVerificacion', ` Error del sistema: ${mensaje}`, 'error');
+            return false;
+        };
+
+        // Efectos visuales adicionales
+        function agregarEfectoBrillo(elemento) {
+            elemento.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5)';
+            setTimeout(() => {
+                elemento.style.boxShadow = '';
+            }, 1000);
+        }
+
+        // Mejorar feedback visual en botones
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                agregarEfectoBrillo(e.target);
+            }
+        });
+    </script>
+</body>
+</html>
